@@ -64,7 +64,7 @@ Our final model weights are available to download using this [link](https://driv
 ## Reference
 If you find our work on gated depth estimation useful in your research, please consider citing our paper:
 
-```
+```bib
 @misc{walia2021gated2gated,
       title={Gated2Gated: Self-Supervised Depth Estimation from Gated Images}, 
       author={Amanpreet Walia and Stefanie Walz and Mario Bijelic and Fahim Mannan and Frank Julca-Aguilar and Michael Langer and Werner Ritter and Felix Heide},
