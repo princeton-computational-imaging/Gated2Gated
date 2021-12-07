@@ -21,7 +21,8 @@ Activate the environment using
 ```
 conda activate gated2gated
 ```
-Download the dataset once the link is available in `data` directory.
+<!-- Download the dataset once the link is available in `data` directory. -->
+Download the dataset in the `data` directory.
 
 ## Quick Example
 Infer depth for single example using
