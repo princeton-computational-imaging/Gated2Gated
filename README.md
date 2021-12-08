@@ -47,7 +47,7 @@ For downloading the final weights, please refer to [here](weights/final/README.m
 ### Pre-trained Models
 Our final model weights are available to download using this [link](https://drive.google.com/drive/folders/1iQlPkX_sz8SV6lTJDgcNRQPPyOGfO7SX?usp=sharing). More details can be found [here](weights/final/README.md).
 
-### Results
+## Results
 
 ![architecture](assets/imgs/albedo_ambient_examples.png)
 ![architecture](assets/imgs/cbar.png)
