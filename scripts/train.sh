@@ -4,7 +4,6 @@ python src/train.py \
 --data_dir                  ./data \
 --log_dir                   ./logs \
 --coeff_fpath               chebychev \
---passive_factor_fpath      passive_factor \
 --depth_flat_world_fpath    depth_flat_world \
 --model_name                multinetwork \
 --model_type                multinetwork \

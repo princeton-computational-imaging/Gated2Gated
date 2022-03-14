@@ -42,7 +42,6 @@ class Trainer:
         self.normalizer = 2**self.opt.num_bits - 1
         self.dark_levels = np.array([87.,70.,87.]).reshape(1,3,1,1).astype(np.float32)
         self.load_passive = True if self.opt.passive_supervision else False
-        self.passive_factor_fpath = self.opt.passive_factor_fpath if self.load_passive else None
 
         self.device = torch.device("cpu" if self.opt.no_cuda else "cuda")
 
@@ -170,8 +169,7 @@ class Trainer:
                                      self.opt.frame_ids,
                                      num_scales = 4,
                                      is_train=True, img_ext=img_ext,
-                                     load_passive=self.load_passive,
-                                     passive_factor_fpath=self.passive_factor_fpath)
+                                     load_passive=self.load_passive)
 
         self.train_loader = DataLoader(train_dataset, self.opt.batch_size, shuffle=True,
                                        num_workers=self.opt.num_workers,
@@ -183,8 +181,7 @@ class Trainer:
                                    self.opt.frame_ids,
                                    num_scales = 4,
                                    is_train=False, img_ext=img_ext,
-                                   load_passive=self.load_passive,
-                                   passive_factor_fpath=self.passive_factor_fpath)
+                                   load_passive=self.load_passive)
 
         self.val_loader = DataLoader(val_dataset, self.opt.batch_size, shuffle=True,
                                      num_workers=self.opt.num_workers,

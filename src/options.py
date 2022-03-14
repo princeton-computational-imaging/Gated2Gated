@@ -21,10 +21,6 @@ class GatedOptions:
                                     type=str,
                                     required=True,
                                     help="file with stored chebychev coefficients")
-        self.parser.add_argument("--passive_factor_fpath",
-                                    type=str,
-                                    required=False,
-                                    help="file with stored passive factors")
         self.parser.add_argument("--depth_flat_world_fpath",
                                     type=str,
                                     required=False,

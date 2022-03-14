@@ -14,7 +14,7 @@ import cv2
 import json
 
 
-def passive_loader(base_dir, img_id, crop_size_h, crop_size_w, cent_fnum, passive_factor,
+def passive_loader(base_dir, img_id, crop_size_h, crop_size_w, cent_fnum, passive_factor=1.0,
                  num_bits=10, data_type='real',
                  scale_images=False,
                  scaled_img_width=None, scaled_img_height=None):
@@ -83,7 +83,7 @@ class GatedDataset(data.Dataset):
                  frame_idxs,
                  num_scales,
                  is_train=False,
-                 img_ext = '.tiff', load_passive = False, passive_factor_fpath=None):
+                 img_ext = '.tiff', load_passive = False):
         super(GatedDataset, self).__init__()
 
         
@@ -106,8 +106,7 @@ class GatedDataset(data.Dataset):
         self.load_passive = load_passive
         if self.load_passive:
             self.passive_loader = passive_loader
-            with open(os.path.join(passive_factor_fpath, 'passive_factor.json')) as passive_factor_file:
-                self.passive_factors = json.load(passive_factor_file)
+            
 
         self.to_tensor = transforms.ToTensor()
 
@@ -210,7 +209,7 @@ class GatedDataset(data.Dataset):
         return gated
 
     def get_passive(self, frame_index, cent_fnum, do_flip):
-        passive = self.passive_loader(self.root_dir, frame_index, self.crop_size_h, self.crop_size_w, cent_fnum=cent_fnum, passive_factor=self.passive_factors[frame_index[:-6]])
+        passive = self.passive_loader(self.root_dir, frame_index, self.crop_size_h, self.crop_size_w, cent_fnum=cent_fnum)
         if do_flip:
             passive = np.fliplr(passive).copy()
         passive = np.expand_dims(passive, 0).astype(np.float32)
