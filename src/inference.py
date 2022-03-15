@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 import PIL.Image as pil
 import matplotlib.cm as cm
+import numpy as np
+from layers import disp_to_depth
+
 
 
 import torch
@@ -35,10 +38,10 @@ def read_gated_image(base_dir, img_id, num_bits=10, data_type='real',
 
     for gate_id in range(3):
         gate_dir = os.path.join(base_dir, 'gated%d_10bit' % gate_id)
-        path = os.path.join(gate_dir, img_id + '.tiff')
+        path = os.path.join(gate_dir, img_id + '.png')
         assert os.path.exists(path), "No such file : %s" % path
         img = cv2.imread(os.path.join(
-            gate_dir, img_id + '.tiff'), cv2.IMREAD_UNCHANGED)
+            gate_dir, img_id + '.png'), cv2.IMREAD_UNCHANGED)
         if data_type == 'real':
             img = img[crop_size_h:(img.shape[0] - crop_size_h),
                       crop_size_w:(img.shape[1] - crop_size_w)]
@@ -52,14 +55,6 @@ def read_gated_image(base_dir, img_id, num_bits=10, data_type='real',
         img = cv2.resize(img, dsize=(scaled_img_width,
                          scaled_img_height), interpolation=cv2.INTER_AREA)
     return img
-
-
-def disp_to_depth(disp, min_depth=0.1, max_depth=100.0):
-    min_disp = 1 / max_depth
-    max_disp = 1 / min_depth
-    scaled_disp = min_disp + (max_disp - min_disp) * disp
-    depth = 1 / scaled_disp
-    return scaled_disp, depth
 
 
 def load_weights(model, pretrained_weights_path):
@@ -109,7 +104,7 @@ def inference(options):
     models["albedo"] = load_weights(
         models["albedo"], os.path.join(options.weights_dir, "albedo.pth"))
     models["ambient"] = load_weights(
-        models["ambient"], os.path.join(options.weights_dir, "depth.pth"))
+        models["ambient"], os.path.join(options.weights_dir, "ambient.pth"))
 
     # Eval Mode
     for model in models.values():
@@ -119,7 +114,7 @@ def inference(options):
     for _dir in results_dirs:
         os.makedirs(os.path.join(options.results_dir, _dir), exist_ok=True)
 
-    imgs_names = os.listdir(os.path.join(options.data_dir, "gated0_10bit"))
+    imgs_names = [sample for sample in os.listdir(os.path.join(options.data_dir, "gated0_10bit")) if '.png' in sample]
     img_ids = list(map(lambda x: x.split('.')[0], imgs_names))
 
     with torch.no_grad():
@@ -145,15 +140,18 @@ def inference(options):
             # Getting ambient
             _ambient = models['ambient'](feats)[('ambient', 0)]
             ambient = _ambient[0, 0].cpu().numpy()
-            np.savez(os.path.join(options.results_dir, "ambient",
-                     "{}.npz".format(img_id)), ambient)
+            ambient = np.clip(ambient, 0.0, 1.0) * 255.
+            ambient = pil.fromarray(ambient.astype(np.uint8))
+            ambient.save(os.path.join(options.results_dir, "ambient",
+                     "{}.png".format(img_id)))
 
             # Getting albedo
             _albedo = models['albedo'](feats)[('albedo', 0)]
             albedo = _albedo[0, 0].cpu().numpy()
-            albedo = np.clip(albedo, 0.0, 1.0)
-            np.savez(os.path.join(options.results_dir,
-                     "albedo", "{}.npz".format(img_id)), albedo)
+            albedo = np.clip(albedo, 0.0, 1.0) * 255.
+            albedo = pil.fromarray(albedo.astype(np.uint8))
+            albedo.save(os.path.join(options.results_dir, "albedo",
+                                      "{}.png".format(img_id)))
 
 
 if __name__ == "__main__":

@@ -156,9 +156,7 @@ class Trainer:
 
         train_filenames = readlines(fpath.format("train"))
         val_filenames = readlines(fpath.format("val"))
-       
-        if self.opt.dataset == "gated":
-            img_ext = '.tiff'
+
 
         num_train_samples = len(train_filenames)
         self.num_total_steps = num_train_samples // self.opt.batch_size * self.opt.num_epochs
@@ -168,7 +166,7 @@ class Trainer:
                                      self.opt.height, self.opt.width,
                                      self.opt.frame_ids,
                                      num_scales = 4,
-                                     is_train=True, img_ext=img_ext,
+                                     is_train=True,
                                      load_passive=self.load_passive)
 
         self.train_loader = DataLoader(train_dataset, self.opt.batch_size, shuffle=True,
@@ -180,7 +178,7 @@ class Trainer:
                                    self.opt.height, self.opt.width,
                                    self.opt.frame_ids,
                                    num_scales = 4,
-                                   is_train=False, img_ext=img_ext,
+                                   is_train=False,
                                    load_passive=self.load_passive)
 
         self.val_loader = DataLoader(val_dataset, self.opt.batch_size, shuffle=True,
@@ -362,17 +360,17 @@ class Trainer:
         
         # Get outputs for inverse depth, albedo and ambient by passing gated image
         if self.opt.model_type == "multioutput":
-            outputs = self.models["gated2gated"](inputs["color_aug", 0, 0])
+            outputs = self.models["gated2gated"](inputs["gated_aug", 0, 0])
         elif self.opt.model_type == "multinetwork":
             if self.opt.depth_model == "packnet" or self.opt.depth_model == "packnet_full":
                 # Get inverse depth output
-                outputs = self.models["depth"](inputs["color_aug", 0, 0])
+                outputs = self.models["depth"](inputs["gated_aug", 0, 0])
             elif self.opt.depth_model == "resnet":
-                depth_feats = self.models["depth_encoder"](inputs["color_aug", 0, 0])
+                depth_feats = self.models["depth_encoder"](inputs["gated_aug", 0, 0])
                 outputs = self.models["depth"](depth_feats)
 
             # Get albedo and ambient  
-            features = self.models["encoder"](inputs["color_aug", 0, 0])
+            features = self.models["encoder"](inputs["gated_aug", 0, 0])
             outputs.update(self.models["albedo"](features))
             outputs.update(self.models["ambient"](features))
 
@@ -387,11 +385,11 @@ class Trainer:
                     source_scale = scale
                 else:
                     source_scale = 0
-                mask = snr_binary_mask(inputs["color", 0, source_scale],min_intns=self.opt.min_snr_val)
+                mask = snr_binary_mask(inputs["gated", 0, source_scale],min_intns=self.opt.min_snr_val)
                 outputs[("snr_mask", scale)] = mask
 
                 if self.opt.intensity_mask:
-                    mask = intensity_mask(inputs["color", 0, source_scale], self.depth_flat_world)
+                    mask = intensity_mask(inputs["gated", 0, source_scale], self.depth_flat_world)
                     outputs[("intensity_mask", scale)] = mask
 
         self.generate_images_pred(inputs,outputs)
@@ -401,7 +399,7 @@ class Trainer:
 
     def generate_images_pred(self, inputs, outputs):
         """
-            Generate the warped (reprojected) color images for a minibatch.
+            Generate the warped (reprojected) gated images for a minibatch.
             Generated images are saved into the `outputs` dictionary.
         """
         for scale in self.opt.scales:
@@ -455,12 +453,12 @@ class Trainer:
                     outputs[("sample", frame_id, scale)] = pix_coords
                     
                     # Do inverse warping to warp the neighbouring frames to central frame for calculating reprojection loss
-                    outputs[("color", frame_id, scale)] = F.grid_sample(inputs[("color", frame_id, source_scale)],
+                    outputs[("gated", frame_id, scale)] = F.grid_sample(inputs[("gated", frame_id, source_scale)],
                                                                         outputs[("sample", frame_id, scale)],
                                                                         padding_mode="border",align_corners=True)
 
                     if not self.opt.disable_automasking:
-                        outputs[("color_identity", frame_id, scale)] = inputs[("color", frame_id, source_scale)]
+                        outputs[("gated_identity", frame_id, scale)] = inputs[("gated", frame_id, source_scale)]
             ################################################################################################################################
 
             ################################################################################################################################
@@ -512,12 +510,12 @@ class Trainer:
 
             disp = outputs[("disp", scale)]
             depth = outputs[("depth",0, scale)].detach() # using detach to avoid passing gradient
-            color = inputs[("color", 0, scale)]
-            target = inputs[("color", 0, source_scale)]
+            gated = inputs[("gated", 0, scale)]
+            target = inputs[("gated", 0, source_scale)]
 
             if self.opt.temporal_loss:
                 for frame_id in self.opt.frame_ids[1:]:
-                    pred = outputs[("color", frame_id, scale)]
+                    pred = outputs[("gated", frame_id, scale)]
                     reprojection_losses.append(self.compute_reprojection_loss(pred, target))
 
                 reprojection_losses = torch.cat(reprojection_losses, 1)
@@ -525,7 +523,7 @@ class Trainer:
                 if not self.opt.disable_automasking:
                     identity_reprojection_losses = []
                     for frame_id in self.opt.frame_ids[1:]:
-                        pred = inputs[("color", frame_id, source_scale)]
+                        pred = inputs[("gated", frame_id, source_scale)]
                         identity_reprojection_losses.append(
                             self.compute_reprojection_loss(pred, target))
 
@@ -590,7 +588,7 @@ class Trainer:
 
             if self.opt.cycle_loss and scale == 0:
                 
-                target = inputs[("color",0,scale)]
+                target = inputs[("gated",0,scale)]
                 pred = outputs[("sim_gated",scale)]
                 
                 reprojection_losses = self.compute_reprojection_loss(pred,target)
@@ -619,8 +617,8 @@ class Trainer:
 
             mean_disp = disp.mean(2, True).mean(3, True)
             norm_disp = disp / (mean_disp + 1e-7)
-            # smooth_loss = get_smooth_loss(norm_disp, color)
-            smooth_loss = get_smooth_loss(disp, color)
+            # smooth_loss = get_smooth_loss(norm_disp, gated)
+            smooth_loss = get_smooth_loss(disp, gated)
             losses["smoothness/{}".format(scale)] = smooth_loss
 
             loss += self.opt.disparity_smoothness * smooth_loss / (2 ** scale)
@@ -641,7 +639,7 @@ class Trainer:
 
             # select what features the pose network takes as input
             
-            pose_feats = {f_i: inputs["color_aug", f_i, 0] for f_i in self.opt.frame_ids}
+            pose_feats = {f_i: inputs["gated_aug", f_i, 0] for f_i in self.opt.frame_ids}
 
             for f_i in self.opt.frame_ids[1:]:
                 if f_i != "s":
@@ -667,7 +665,7 @@ class Trainer:
             # Here we input all frames to the pose net (and predict all poses) together
             if self.opt.pose_model_type in ["separate_resnet", "posecnn"]:
                 pose_inputs = torch.cat(
-                    [inputs[("color_aug", i, 0)] for i in self.opt.frame_ids if i != "s"], 1)
+                    [inputs[("gated_aug", i, 0)] for i in self.opt.frame_ids if i != "s"], 1)
 
                 if self.opt.pose_model_type == "separate_resnet":
                     pose_inputs = [self.models["pose_encoder"](pose_inputs)]
@@ -707,11 +705,11 @@ class Trainer:
                     for frame_id in self.opt.frame_ids:
                         writer.add_image(
                             "gated_{}_{}/{}".format(frame_id, s, j),
-                            inputs[("color", frame_id, s)][j].data, self.step)
+                            inputs[("gated", frame_id, s)][j].data, self.step)
                         if s == 0 and frame_id != 0:
                             writer.add_image(
                                 "gated_temp_pred_{}_{}/{}".format(frame_id, s, j),
-                                outputs[("color", frame_id, s)][j].data, self.step)
+                                outputs[("gated", frame_id, s)][j].data, self.step)
 
                     if not self.opt.disable_automasking:
                         writer.add_image("automask_{}/{}".format(s, j), outputs["identity_selection/{}".format(s)][j][None, ...], self.step)
@@ -724,7 +722,7 @@ class Trainer:
                     writer.add_image("disp_{}/{}".format(s, j),disp, self.step, dataformats='HWC')
                 else:
                     # if the temporal loss is not opted, then show the central frame i.e. Frame 0 
-                    writer.add_image("gated_{}_{}/{}".format(0, s, j),inputs[("color", 0, s)][j].data, self.step)
+                    writer.add_image("gated_{}_{}/{}".format(0, s, j),inputs[("gated", 0, s)][j].data, self.step)
                 
                 # Log albedo and ambient
                 if self.opt.cycle_loss and s == 0:

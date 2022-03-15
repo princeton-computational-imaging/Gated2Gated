@@ -63,9 +63,9 @@ class Gated2DepthDataset(gated_dataset.GatedDataset):
     def __init__(self, gated_dir, filenames,
                  height, width, num_scales, depth_normalizer = 150.0,
                  frame_idxs = [0],
-                 is_train=False, img_ext='.tiff'):
+                 is_train=False):
         super().__init__(gated_dir, filenames, height, width, frame_idxs,
-                         num_scales, is_train=is_train, img_ext=img_ext)
+                         num_scales, is_train=is_train)
         assert frame_idxs == [0], "Gated2depth dataset has no temporal frames"
         self.depth_normalizer = depth_normalizer
         self.load_depth = self.check_depth()

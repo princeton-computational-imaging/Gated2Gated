@@ -7,5 +7,5 @@ python src/inference.py \
        --min_depth              0.1 \
        --max_depth              100.0 \
        --depth_normalizer       70.0 \
-       --results_dir            results \
-       --weights_dir            weights/final
+       --results_dir            ./results \
+       --weights_dir            ./models/stf

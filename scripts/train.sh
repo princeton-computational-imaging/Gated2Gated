@@ -9,7 +9,7 @@ python src/train.py \
 --model_type                multinetwork \
 --exp_name                  multinetwork \
 --models_to_load            depth ambient encoder albedo pose pose_encoder     \
---load_weights_folder       ./weights/initialization \
+--load_weights_folder       ./models/half_resolution \
 --exp_num                   0 \
 --height                    512 \
 --width                     1024 \
