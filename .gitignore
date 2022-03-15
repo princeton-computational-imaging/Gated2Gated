@@ -1,0 +1,6 @@
+*/**/__pycache__/
+src/test.ipynb
+.vscode/
+weights/initialization/*.pth
+weights/final/*.pth
+logs/*
