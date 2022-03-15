@@ -41,6 +41,11 @@ class GatedOptions:
                                     help="depth model to use",
                                     default="packnet",
                                     choices=["packnet","resnet","packnet_full"])
+        self.parser.add_argument("--img_ext",
+                                    type=str,
+                                    help="image extension to use",
+                                    default="png",
+                                    choices=["png","tiff"])
         self.parser.add_argument("--exp_num",
                                     type=int,
                                     help="experiment number",
