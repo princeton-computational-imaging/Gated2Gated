@@ -8,4 +8,4 @@ python src/inference.py \
        --max_depth              100.0 \
        --depth_normalizer       70.0 \
        --results_dir            ./results \
-       --weights_dir            ./models/stf
+       --weights_dir            ./weights/final
