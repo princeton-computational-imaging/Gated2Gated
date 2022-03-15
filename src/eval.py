@@ -107,11 +107,11 @@ def evaluate(opt):
     if opt.dataset == 'g2d':
         lidar_paths = [os.path.join(dataset_dir, "depth_hdl64_gated_compressed", "{}.npz".format(_id)) for _id in
                        val_ids]
-        gated_paths = [os.path.join(dataset_dir, "gated{}_10bit", "{}.png".format(_id)) for _id in val_ids]
+        gated_paths = [os.path.join(dataset_dir, "gated{}_10bit", "{}.{}".format(_id,opt.img_ext)) for _id in val_ids]
     elif opt.dataset == 'stf':
         lidar_paths = [os.path.join(dataset_dir, "lidar_hdl64_strongest_filtered_gated", "{}.npz".format(_id)) for _id
                        in val_ids]
-        gated_paths = [os.path.join(dataset_dir, "gated{}_10bit", "{}.png".format(_id)) for _id in val_ids]
+        gated_paths = [os.path.join(dataset_dir, "gated{}_10bit", "{}.{}".format(_id,opt.img_ext)) for _id in val_ids]
 
     # Load weights
     assert os.path.isdir(opt.load_weights_folder), "Cannot find a folder at {}".format(opt.load_weights_folder)
@@ -293,6 +293,8 @@ if __name__ == "__main__":
     options.add_argument("--width", default=1024,
                          type=int,
                          help="width of crop for gated image")
+    options.add_argument("--img_ext", default='png',
+                         help="image extension (without .)")
     options.add_argument("--depth_normalizer", default=70.0,
                          type=float,
                          help="depth normalizer to multiply predicted depth with")

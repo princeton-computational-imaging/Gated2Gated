@@ -167,6 +167,7 @@ class Trainer:
                                      self.opt.frame_ids,
                                      num_scales = 4,
                                      is_train=True,
+                                     img_ext=self.opt.img_ext,
                                      load_passive=self.load_passive)
 
         self.train_loader = DataLoader(train_dataset, self.opt.batch_size, shuffle=True,
@@ -179,6 +180,7 @@ class Trainer:
                                    self.opt.frame_ids,
                                    num_scales = 4,
                                    is_train=False,
+                                   img_ext=self.opt.img_ext,
                                    load_passive=self.load_passive)
 
         self.val_loader = DataLoader(val_dataset, self.opt.batch_size, shuffle=True,

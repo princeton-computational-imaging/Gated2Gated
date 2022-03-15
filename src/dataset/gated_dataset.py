@@ -15,18 +15,19 @@ import json
 
 
 def passive_loader(base_dir, img_id, crop_size_h, crop_size_w, cent_fnum,
-                 num_bits=10, data_type='real',
-                 scale_images=False,
-                 scaled_img_width=None, scaled_img_height=None):
+                    img_ext='png',
+                    num_bits=10, data_type='real',
+                    scale_images=False,
+                    scaled_img_width=None, scaled_img_height=None):
     normalizer = 2 ** num_bits - 1.
 
     if cent_fnum == 0:
         dir = os.path.join(base_dir, 'gated_passive_10bit')
     else:
         dir = os.path.join(base_dir, 'gated_passive_10bit_history_%d' % (cent_fnum))
-    path = os.path.join(dir, img_id + '.png')
+    path = os.path.join(dir, img_id + f'.{img_ext}')
     assert os.path.exists(path), "No such file : %s" % path
-    img = cv2.imread(os.path.join(dir, img_id + '.png'), cv2.IMREAD_UNCHANGED)
+    img = cv2.imread(os.path.join(dir, img_id + f'.{img_ext}'), cv2.IMREAD_UNCHANGED)
     if data_type == 'real':
         img = img[crop_size_h:(img.shape[0] - crop_size_h),
               crop_size_w:(img.shape[1] - crop_size_w)
@@ -42,6 +43,7 @@ def passive_loader(base_dir, img_id, crop_size_h, crop_size_w, cent_fnum,
 
 
 def gated_loader(base_dir, img_id, crop_size_h, crop_size_w, history=None,
+                 img_ext='png',   
                  num_bits=10, data_type='real',   
                  scale_images=False,
                  scaled_img_width=None, scaled_img_height=None):
@@ -55,9 +57,9 @@ def gated_loader(base_dir, img_id, crop_size_h, crop_size_w, history=None,
             gate_dir = os.path.join(base_dir,'gated%d_10bit' % gate_id)
         else:
             gate_dir = os.path.join(base_dir,'gated%d_10bit_history_%d'%(gate_id,history))
-        path = os.path.join(gate_dir, img_id + '.png')
+        path = os.path.join(gate_dir, img_id + f'.{img_ext}')
         assert os.path.exists(path),"No such file : %s"%path 
-        img = cv2.imread(os.path.join(gate_dir, img_id + '.png'), cv2.IMREAD_UNCHANGED)
+        img = cv2.imread(os.path.join(gate_dir, img_id + f'.{img_ext}'), cv2.IMREAD_UNCHANGED)
         if data_type == 'real':
             img = img[ crop_size_h:(img.shape[0] - crop_size_h),
                        crop_size_w:(img.shape[1] - crop_size_w)
@@ -83,15 +85,16 @@ class GatedDataset(data.Dataset):
                  frame_idxs,
                  num_scales,
                  is_train=False,
+                 img_ext='png',
                  load_passive = False):
         super(GatedDataset, self).__init__()
-
         
         self.root_dir = gated_dir
         self.filenames = filenames
         self.height = height
         self.width = width
         self.num_scales = num_scales
+        self.img_ext = img_ext
 
         self.full_res_shape = (1280, 720)
         self.crop_size_h, self.crop_size_w = int((self.full_res_shape[1]-self.height)/2), int((self.full_res_shape[0]-self.width)/2),
@@ -202,13 +205,13 @@ class GatedDataset(data.Dataset):
         return len(self.filenames)
 
     def get_gated(self, frame_index, history, do_flip):
-        gated = self.loader(self.root_dir, frame_index, self.crop_size_h, self.crop_size_w, history=history)
+        gated = self.loader(self.root_dir, frame_index, self.crop_size_h, self.crop_size_w, history=history, img_ext=self.img_ext)
         if do_flip:
             gated = np.fliplr(gated).copy()
         return gated
 
     def get_passive(self, frame_index, cent_fnum, do_flip):
-        passive = self.passive_loader(self.root_dir, frame_index, self.crop_size_h, self.crop_size_w, cent_fnum=cent_fnum)
+        passive = self.passive_loader(self.root_dir, frame_index, self.crop_size_h, self.crop_size_w, cent_fnum=cent_fnum, img_ext=self.img_ext)
         if do_flip:
             passive = np.fliplr(passive).copy()
         passive = np.expand_dims(passive, 0).astype(np.float32)
