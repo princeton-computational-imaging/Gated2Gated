@@ -36,7 +36,7 @@ def passive_loader(base_dir, img_id, crop_size_h, crop_size_w, cent_fnum,
         img = img.copy()
         img[img > 2 ** 10 - 1] = normalizer
 
-    img = np.float32(img / normalizer, 0., 1.)
+    img = np.float32(img / normalizer)
     if scale_images:
         img = cv2.resize(img, dsize=(scaled_img_width, scaled_img_height), interpolation=cv2.INTER_AREA)
     return img
@@ -178,7 +178,7 @@ class GatedDataset(data.Dataset):
 
     def preprocess(self, inputs, gated_aug):
         """
-            Resize colour images to the required scales and augment if required
+            Resize gated images to the required scales and augment if required
 
             We create the gated_aug object in advance and apply the same augmentation to all
             images in this item. This ensures that all images input to the pose network receive the
