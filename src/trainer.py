@@ -733,7 +733,7 @@ class Trainer:
                     writer.add_image("albedo_pred_{}_{}/{}".format(frame_id, s, j), 
                                     torch.clamp(outputs[("albedo", s)][j].data, 0.0, 1.0), self.step)
                     writer.add_image("ambient_pred_{}_{}/{}".format(frame_id, s, j), 
-                                    normalize_image(outputs[("ambient", s)][j].data), self.step)
+                                    torch.clamp(outputs[("ambient", s)][j].data, 0.0, 1.0), self.step)
                     writer.add_image("scaled_depth_pred_{}_{}/{}".format(frame_id, s, j), 
                                     depth_image(outputs[("sc_depth", s)][j].data[0].detach().cpu()), self.step, dataformats='HWC')
 
