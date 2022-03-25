@@ -22,19 +22,98 @@ Activate the environment using
 ```
 conda activate gated2gated
 ```
-<!-- Download the dataset once the link is available in `data` directory. -->
-Download the dataset in the `data` directory.
+
+Download the Gated2Gated dataset and the models from the [DENSE dataset webpage](https://www.uni-ulm.de/en/in/driveu/projects/dense-datasets).
+
+Check if you have downloaded all files. Then, you can unzip your downloaded files using:
+```
+sh scripts/unzip_data.sh <dataset_download_folder> <dataset_destination_folder>
+```
+
+After unzipping the files, your directory should look like this:
+```
+gated2gated
+├── data
+│   ├── gated0_10bit
+│   ├── gated0_10bit_history_1
+│   ├── gated0_10bit_history_-1
+│   ├── gated0_10bit_history_2
+│   ├── gated0_10bit_history_-2
+│   ├── gated0_10bit_history_3
+│   ├── gated0_10bit_history_-3
+│   ├── gated0_10bit_history_4
+│   ├── gated0_10bit_history_-4
+│   ├── gated0_10bit_history_-5
+│   ├── gated0_10bit_history_-6
+│   ├── gated0_8bit
+│   ├── gated1_10bit
+│   ├── gated1_10bit_history_1
+│   ├── gated1_10bit_history_-1
+│   ├── gated1_10bit_history_2
+│   ├── gated1_10bit_history_-2
+│   ├── gated1_10bit_history_3
+│   ├── gated1_10bit_history_-3
+│   ├── gated1_10bit_history_4
+│   ├── gated1_10bit_history_-4
+│   ├── gated1_10bit_history_-5
+│   ├── gated1_10bit_history_-6
+│   ├── gated1_8bit
+│   ├── gated2_10bit
+│   ├── gated2_10bit_history_1
+│   ├── gated2_10bit_history_-1
+│   ├── gated2_10bit_history_2
+│   ├── gated2_10bit_history_-2
+│   ├── gated2_10bit_history_3
+│   ├── gated2_10bit_history_-3
+│   ├── gated2_10bit_history_4
+│   ├── gated2_10bit_history_-4
+│   ├── gated2_10bit_history_-5
+│   ├── gated2_10bit_history_-6
+│   ├── gated2_8bit
+│   ├── gated_passive_10bit
+│   ├── gated_passive_10bit_history_1
+│   ├── gated_passive_10bit_history_-1
+│   ├── gated_passive_10bit_history_2
+│   ├── gated_passive_10bit_history_-2
+│   ├── gated_passive_10bit_history_3
+│   ├── gated_passive_10bit_history_-3
+│   ├── gated_passive_10bit_history_4
+│   ├── gated_passive_10bit_history_-4
+│   ├── gated_passive_10bit_history_-5
+│   ├── gated_passive_10bit_history_-6
+│   ├── gated_passive_8bit
+│   ├── lidar_hdl64_strongest_filtered_gated
+│   └── lidar_hdl64_strongest_gated
+└── models
+    ├── g2d
+    ├── initialization
+    └── stf
+```
 
 ## Quick Example
-Infer depth for single example using
+Infer depth for single example using:
 ```
 sh scripts/inference.sh
 ```
 ## Training
-After downloading the pre-trained weights (from lower resolution, read [here](weights/initialization/README.md)), start training using:
+Train a model with pre-trained weights from lower resolution using:
 
 ```
 sh scripts/train.sh
+```
+
+## Evaluation
+If you have not trained the models by yourself, make sure that you have downloaded our models into the "models" folder.
+
+Evaluation on [Seeing Trough Fog](https://openaccess.thecvf.com/content_CVPR_2020/papers/Bijelic_Seeing_Through_Fog_Without_Seeing_Fog_Deep_Multimodal_Sensor_Fusion_CVPR_2020_paper.pdf) Dataset:
+```
+sh scripts/eval_stf.sh
+```
+Please notice that we have used filtered LiDAR pointclouds for evaluating on the Seeing Through Fog dataset. These pointclouds are available in our Gated2Gated dataset.
+
+Evaluation on [Gated2Depth](https://openaccess.thecvf.com/content_ICCV_2019/papers/Gruber_Gated2Depth_Real-Time_Dense_Lidar_From_Gated_Images_ICCV_2019_paper.pdf) Dataset:
+```
+sh scripts/eval_g2d.sh
 ```
 
 <!-- ## Evaluation
@@ -45,7 +124,7 @@ For downloading the final weights, please refer to [here](weights/final/README.m
 <!-- ## Additional Material -->
 
 ### Pre-trained Models
-Our final model weights are available to download using this [link](https://drive.google.com/drive/folders/1iQlPkX_sz8SV6lTJDgcNRQPPyOGfO7SX?usp=sharing)([alternative link](https://drive.google.com/drive/folders/1wc6O0Awc3k_cJx1V8IbPHFZWlrFYtAbj?usp=sharing)). More details can be found [here](weights/final/README.md).
+Our final model weights for the [Seeing Through Fog](https://openaccess.thecvf.com/content_CVPR_2020/papers/Bijelic_Seeing_Through_Fog_Without_Seeing_Fog_Deep_Multimodal_Sensor_Fusion_CVPR_2020_paper.pdf) and the [Gated2Depth](https://openaccess.thecvf.com/content_ICCV_2019/papers/Gruber_Gated2Depth_Real-Time_Dense_Lidar_From_Gated_Images_ICCV_2019_paper.pdf) dataset are available for download at the [DENSE dataset webpage](https://www.uni-ulm.de/en/in/driveu/projects/dense-datasets).
 
 ## Examples
 
