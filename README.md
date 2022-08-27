@@ -146,13 +146,13 @@ Our final model weights for the [Seeing Through Fog](https://openaccess.thecvf.c
 If you find our work on gated depth estimation useful in your research, please consider citing our paper:
 
 ```bib
-@misc{walia2021gated2gated,
-      title={Gated2Gated: Self-Supervised Depth Estimation from Gated Images}, 
-      author={Amanpreet Walia and Stefanie Walz and Mario Bijelic and Fahim Mannan and Frank Julca-Aguilar and Michael Langer and Werner Ritter and Felix Heide},
-      year={2021},
-      eprint={2112.02416},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+    @inproceedings{walia2022gated2gated,
+      title={Gated2Gated: Self-Supervised Depth Estimation from Gated Images},
+      author={Walia, Amanpreet and Walz, Stefanie and Bijelic, Mario and Mannan, Fahim and Julca-Aguilar, Frank and Langer, Michael and Ritter, Werner and Heide, Felix},
+      booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+      pages={2811--2821},
+      year={2022}
+    }
 }
 ```
 
